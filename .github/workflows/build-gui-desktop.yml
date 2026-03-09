@@ -1,10 +1,22 @@
-name: Build GUI Desktop Releases
+name: Build GUI Desktop Packages
 
 on:
   workflow_dispatch:
   push:
+    branches:
+      - main
     tags:
       - "v*"
+    paths:
+      - ".github/workflows/build-gui-desktop.yml"
+      - "diffrenciation/power rule menthod/GUI OF POWER RULE MENTHOD/differentiation-gui/**"
+
+permissions:
+  contents: read
+
+env:
+  APP_DIR: diffrenciation/power rule menthod/GUI OF POWER RULE MENTHOD/differentiation-gui
+  APP_NAME: QuickRedTechDifferentiator
 
 jobs:
   build:
@@ -19,7 +31,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: diffrenciation/power rule menthod/GUI OF POWER RULE MENTHOD/differentiation-gui
+        working-directory: ${{ env.APP_DIR }}
 
     steps:
       - name: Checkout repository
@@ -29,20 +41,42 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: pip
 
       - name: Install desktop build dependencies
         run: |
           python -m pip install --upgrade pip
           pip install PySide6 sympy pyinstaller
 
-      - name: Build desktop package
+      - name: Build Windows EXE or macOS installer
         run: python build_release.py
 
-      - name: Upload packaged artifact
+      - name: Show packaged files
+        run: python -c "from pathlib import Path; [print(path) for path in sorted(Path('build_artifacts').glob('*'))]"
+
+      - name: Upload Windows EXE package
+        if: matrix.os == 'windows-latest'
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}-desktop-build
-          path: diffrenciation/power rule menthod/GUI OF POWER RULE MENTHOD/differentiation-gui/build_artifacts/*
+          name: windows-exe-package
+          path: "${{ env.APP_DIR }}/build_artifacts/*windows-exe.zip"
+          if-no-files-found: error
+
+      - name: Upload macOS DMG
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg-package
+          path: "${{ env.APP_DIR }}/build_artifacts/*macos.dmg"
+          if-no-files-found: error
+
+      - name: Upload macOS APP archive
+        if: matrix.os == 'macos-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-app-package
+          path: "${{ env.APP_DIR }}/build_artifacts/*macos-app.zip"
+          if-no-files-found: error
 
   release:
     if: startsWith(github.ref, 'refs/tags/')
@@ -61,3 +95,4 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: release-artifacts/**/*.*
+          generate_release_notes: true

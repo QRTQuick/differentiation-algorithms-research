@@ -58,7 +58,7 @@ def _package_windows():
     if not exe_path.exists():
         raise FileNotFoundError(f"Expected Windows executable at {exe_path}")
 
-    archive_path = ARTIFACTS_DIR / f"{APP_NAME}-windows-x64.zip"
+    archive_path = ARTIFACTS_DIR / f"{APP_NAME}-windows-exe.zip"
     with zipfile.ZipFile(archive_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
         for path in app_dir.rglob("*"):
             if path.is_file():
@@ -69,6 +69,12 @@ def _package_macos():
     app_bundle = DIST_DIR / f"{APP_NAME}.app"
     if not app_bundle.exists():
         raise FileNotFoundError(f"Expected macOS app bundle at {app_bundle}")
+
+    zip_path = ARTIFACTS_DIR / f"{APP_NAME}-macos-app.zip"
+    with zipfile.ZipFile(zip_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for path in app_bundle.rglob("*"):
+            if path.is_file():
+                archive.write(path, arcname=path.relative_to(app_bundle.parent))
 
     dmg_path = ARTIFACTS_DIR / f"{APP_NAME}-macos.dmg"
     _run(
