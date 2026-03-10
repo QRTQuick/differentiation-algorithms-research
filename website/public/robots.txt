@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
 
+# Block non-content endpoints.
+Disallow: /api/
+Disallow: /_vercel/
+
 Sitemap: https://differentiation-algorithms-research.vercel.app/sitemap.xml
