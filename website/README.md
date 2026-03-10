@@ -21,7 +21,7 @@ npm run build
 
 ## Deployment note
 
-The current robots and sitemap files still use the placeholder domain `https://differentiation-algorithms-research.vercel.app//`.
+The current robots and sitemap files still use the placeholder domain `https://differentiation-algorithms-research.vercel.app/`.
 Replace that value in:
 
 - `public/robots.txt`
